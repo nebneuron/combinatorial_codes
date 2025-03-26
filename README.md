@@ -99,7 +99,7 @@ This project is licensed under the MIT License.
 
 ## Citation
 
-If you use this work or its underlying theory in your research, please cite the foundational paper:
+If you use this work or its underlying theory in your research, please cite the following paper:
 
 For BibTeX users:
 ```

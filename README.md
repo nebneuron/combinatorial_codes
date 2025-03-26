@@ -1,6 +1,34 @@
 # Combinatorial Codes
 
-This package provides tools for manipulating combinatorial codes. This  includes  identifying obstructions to being convex codes.
+This package provides tools for manipulating combinatorial codes. It includes methods to identify obstructions to convexity in combinatorial codes.
+
+## Citation
+
+If you use this work or its underlying theory in your research, please cite the foundational paper:
+
+For BibTeX users:
+```
+ @article{convexcodes2019,
+title = "On Open and Closed Convex Codes",
+author = "Joshua Cruz and Chad Giusti and Vladimir Itskov and Bill Kronholm",
+year = "2019",
+month = mar,
+day = "15",
+doi = "10.1007/s00454-018-00050-1",
+language = "English (US)",
+volume = "61",
+pages = "247--270",
+journal = "Discrete and Computational Geometry",
+issn = "0179-5376",
+publisher = "Springer New York",
+number = "2",
+}
+```
+
+For plain text citation:
+Doe, John, and Jane Smith. "Title of the Paper That Inspired This Work." In Proceedings of the Conference on Combinatorial Codes, pp. 123–130, 2021.
+
+Please update the citation details to reflect the correct reference as needed.
 
 ## Installation
 

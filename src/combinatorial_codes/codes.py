@@ -6,7 +6,7 @@ import numpy as np
 from numba import jit, njit, typed, types
 from numba.typed import Dict # we need this to define a typed dictionary 
 import copy 
-from tda import homology_is_trivial
+# from tda import homology_is_trivial
 
 # Define a Numba array type: 1D float64 array in C-contiguous layout.
 array_type = types.Array(types.int64, 1, 'C')

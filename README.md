@@ -28,6 +28,9 @@ from combinatorial_codes import CombinatorialCode
 array_of_vectors = [[],[1],[2],[3],[1, 2], [2, 3], [1, 3]] # note that we include the empty set here. Currently we should always include empty set in a code. 
 code = CombinatorialCode(array_of_vectors)
 print(code)
+# compute the local obstruction information
+is_maximal_intersection_complete, num_obstructions = code.Obstructions()
+print(is_maximal_intersection_complete, num_obstructions)
 ```
 
 ### Checking for Empty and Full Sets

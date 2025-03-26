@@ -6,7 +6,8 @@ This package provides tools for manipulating combinatorial codes, including func
 
 To install the package, use the following command:
 
-```pip install .
+```pip
+install .
 ```
 
 ## Usage

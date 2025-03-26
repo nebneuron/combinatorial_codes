@@ -8,21 +8,18 @@ If you use this work or its underlying theory in your research, please cite the 
 
 For BibTeX users:
 ```
- @article{convexcodes2019,
+@article{convexcodes2019,
 title = "On Open and Closed Convex Codes",
 author = "Joshua Cruz and Chad Giusti and Vladimir Itskov and Bill Kronholm",
 year = "2019",
 month = mar,
-day = "15",
 doi = "10.1007/s00454-018-00050-1",
 language = "English (US)",
 volume = "61",
 pages = "247--270",
 journal = "Discrete and Computational Geometry",
-issn = "0179-5376",
 publisher = "Springer New York",
-number = "2",
-}
+number = "2",}
 ```
 
 For plain text citation:

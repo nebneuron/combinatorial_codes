@@ -10,10 +10,10 @@ To install the package, do the following:
 ```
 cd combinatorial_codes/
 ```
-* use the following command from commandline:
+* use the following command from commandline, to install the package into an active python environment:
 
 ```
-pip install .
+ pip install -e .
 ```
 
 ## Usage

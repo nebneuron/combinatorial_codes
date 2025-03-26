@@ -25,6 +25,8 @@ from .codes import lattice_dictionary_by_size
 from .codes import nerve_of_max_words
 from .codes import simplicial_violators_from_words
 from .codes import Obstructions
+from examples import example_code
+from examples import example_dictionary
 
 __all__ = [
     "CombinatorialCode",

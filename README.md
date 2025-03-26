@@ -1,6 +1,6 @@
 # Combinatorial Codes
 
-This package provides tools for manipulating combinatorial codes, including functions for computing homology and identifying obstructions.
+This package provides tools for manipulating combinatorial codes. This  includes  identifying obstructions to being convex codes.
 
 ## Installation
 

@@ -7,7 +7,7 @@ setup(
     long_description="",
     author="Vladimir Itskov",
     author_email="vladimir.itskov@psu.edu",
-    url="https://github.com/yourusername/my_package",
+    url="https://github.com/nebneuron/combinatorial_codes",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     python_requires=">=3.11",

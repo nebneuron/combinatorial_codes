@@ -4,10 +4,16 @@ This package provides tools for manipulating combinatorial codes, including func
 
 ## Installation
 
-To install the package, use the following command:
+To install the package, do the following: 
+* download the package
+* change to the appropriate directory, as in
+```
+cd combinatorial_codes/
+```
+* use the following command from commandline:
 
-```pip
-install .
+```
+pip install .
 ```
 
 ## Usage

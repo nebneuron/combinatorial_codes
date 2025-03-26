@@ -1,4 +1,4 @@
-
+from combinatorial_codes import CombinatorialCode
 example_dictionary= {
     "eyes" : [[],[1],[2],[2,3],[1,3]],
     "open not closed" : [[1, 2, 3], [1, 2, 6], [1, 5, 6], [4, 5, 6], [3, 4, 5], [2, 3, 4], [1, 2], [1, 6], [5, 6], [4, 5], [3, 4], [2, 3], []],

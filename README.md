@@ -22,11 +22,6 @@ publisher = "Springer New York",
 number = "2",}
 ```
 
-For plain text citation:
-Doe, John, and Jane Smith. "Title of the Paper That Inspired This Work." In Proceedings of the Conference on Combinatorial Codes, pp. 123–130, 2021.
-
-Please update the citation details to reflect the correct reference as needed.
-
 ## Installation
 
 To install the package, do the following: 

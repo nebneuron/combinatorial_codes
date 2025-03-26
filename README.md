@@ -35,7 +35,7 @@ is_maximal_intersection_complete, num_obstructions = code.Obstructions()
 print(is_maximal_intersection_complete, num_obstructions)
 ```
 
-### There are some example codes that can be acced via the  example_code(name) function 
+### There are some example codes that can be acced via the  example_code(code_name) as in the following: 
 ```
 code1=example_code('eyes')            # a non-convex code on three neurons that resembles eyes
 code2=example_code('closed not open') # a "good" code that is not intersection complete

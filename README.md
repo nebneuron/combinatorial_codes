@@ -23,7 +23,7 @@ cd combinatorial_codes/
 You can create a combinatorial code by passing a list of lists of integers that represent the codewords:
 
 ```python
-from combinatorial_codes import CombinatorialCode
+ from combinatorial_codes import CombinatorialCode, example_code
 
 array_of_vectors = [[],[1],[2],[3],[1, 2], [2, 3], [1, 3]] # note that we include the empty set here. Currently we should always include empty set in a code. 
 code = CombinatorialCode(array_of_vectors)
@@ -34,6 +34,16 @@ print(code)
 is_maximal_intersection_complete, num_obstructions = code.Obstructions()
 print(is_maximal_intersection_complete, num_obstructions)
 ```
+
+### There are some example codes that can be acced via the  example_code(name) function 
+```
+code1=example_code('eyes') # a non-convex code on three neurons that resembles eyes
+code2=example_code('closed not open')
+code3=example_code('open not closed')
+```
+
+
+
 
 ### Checking for Empty and Full Sets
 

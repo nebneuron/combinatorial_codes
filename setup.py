@@ -6,7 +6,7 @@ setup(
     description="A Python package for manipulating combinatorial codes",
     long_description="",
     author="Vladimir Itskov",
-    author_email="your.email@example.com",
+    author_email="vladimir.itskov@psu.edu",
     url="https://github.com/yourusername/my_package",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
@@ -14,6 +14,7 @@ setup(
     install_requires=[
         "numba>=0.57.0",  # Adjust version as needed
         "numpy>=2.1.3",  # Adjust version as needed
+        "gudhi>=3.11.0",  # Adjust version as needed
     ],
     classifiers=[
         "Programming Language :: Python :: 3.11",

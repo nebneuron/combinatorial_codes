@@ -1,5 +1,4 @@
 # __init__.py
-
 from .tda import * 
 from .codes import CombinatorialCode
 from .codes import WORD_TYPE

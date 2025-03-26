@@ -29,7 +29,7 @@ array_of_vectors = [[],[1],[2],[3],[1, 2], [2, 3], [1, 3]] # note that we includ
 code = CombinatorialCode(array_of_vectors)
 print(code)
 ```
-### computing the local obstruction information
+### Computing the local obstruction information
 ```
 is_maximal_intersection_complete, num_obstructions = code.Obstructions()
 print(is_maximal_intersection_complete, num_obstructions)

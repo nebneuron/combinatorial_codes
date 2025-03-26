@@ -16,7 +16,6 @@ from .examples import example_dictionary
 __all__ = [
     "CombinatorialCode",
     "WORD_TYPE",
-    "set_word_type",
     "boolean_matrix_to_array_of_words",
     "sizes_of_words",
     "convert_to_boolean_matrix",

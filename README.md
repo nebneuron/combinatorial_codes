@@ -2,25 +2,6 @@
 
 This package provides tools for manipulating combinatorial codes. It includes methods to identify obstructions to convexity in combinatorial codes.
 
-## Citation
-
-If you use this work or its underlying theory in your research, please cite the foundational paper:
-
-For BibTeX users:
-```
-@article{convexcodes2019,
-title = "On Open and Closed Convex Codes",
-author = "Joshua Cruz and Chad Giusti and Vladimir Itskov and Bill Kronholm",
-year = "2019",
-month = mar,
-doi = "10.1007/s00454-018-00050-1",
-language = "English (US)",
-volume = "61",
-pages = "247--270",
-journal = "Discrete and Computational Geometry",
-publisher = "Springer New York",
-number = "2",}
-```
 
 ## Installation
 
@@ -115,3 +96,23 @@ The package requires the following dependencies:
 ## License
 
 This project is licensed under the MIT License.
+
+## Citation
+
+If you use this work or its underlying theory in your research, please cite the foundational paper:
+
+For BibTeX users:
+```
+@article{convexcodes2019,
+title = "On Open and Closed Convex Codes",
+author = "Joshua Cruz and Chad Giusti and Vladimir Itskov and Bill Kronholm",
+year = "2019",
+month = mar,
+doi = "10.1007/s00454-018-00050-1",
+language = "English (US)",
+volume = "61",
+pages = "247--270",
+journal = "Discrete and Computational Geometry",
+publisher = "Springer New York",
+number = "2",}
+```

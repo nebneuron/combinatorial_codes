@@ -6,11 +6,13 @@ import numpy as np
 from numba import jit, njit, typed, types
 from numba.typed import Dict # we need this to define a typed dictionary 
 import gudhi
-# from tda import homology_is_trivial
+from .tda import homology_is_trivial
 
 # Define a Numba array type: 1D float64 array in C-contiguous layout.
 array_type = types.Array(types.int64, 1, 'C')
-MaximalWordLimit=20; # this is the maximal number of maximal words that we can handle
+MaximalWordLimit=30; # this is the maximal number of maximal words in a code that we can handle.
+# The maximal number of bits in a word is 64, but we can only handle 30 maximal words
+# This is  because the size of the lattice is 2**m, and we need to store the lattice in memory.
 SizeType=np.uint8 # no more than size =64 is supported for computing nerves of maximal words
 # possible_types={8: np.uint8, 16: np.uint16, 32: np.uint32, 64: np.uint64}
 

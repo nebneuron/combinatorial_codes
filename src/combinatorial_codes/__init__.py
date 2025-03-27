@@ -27,6 +27,7 @@ from .codes import simplicial_violators_from_words
 from .codes import Obstructions
 from .examples import example_code
 from .examples import example_dictionary
+from .examples import bernoulli_random_code
 
 __all__ = [
     "CombinatorialCode",
@@ -36,7 +37,8 @@ __all__ = [
     "convert_to_boolean_matrix",
     "find_maximal_words",
     "x_is_a_subset_of_any_in_List",
-    "NumbaList", "homology_is_trivial", "compute_homology_from_facets", "example_code", "example_dictionary"
+    "NumbaList", "homology_is_trivial", "compute_homology_from_facets", 
+    "example_code", "example_dictionary","bernoulli_random_code",
 ]
 
 

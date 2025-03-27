@@ -24,7 +24,7 @@ cd combinatorial_codes/
 You can create a combinatorial code by passing a list of lists of integers that represent the codewords:
 
 ```python
- from combinatorial_codes import CombinatorialCode, example_code
+from combinatorial_codes import CombinatorialCode, example_code
 
 array_of_vectors = [[],[1],[2],[3],[1, 2], [2, 3], [1, 3]] # note that we include the empty set here. Currently we should always include empty set in a code. 
 code = CombinatorialCode(array_of_vectors)

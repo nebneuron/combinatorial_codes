@@ -43,7 +43,11 @@ code2=example_code('closed not open') # a "good" code that is not intersection c
 code3=example_code('open not closed') # a "good" code that is not intersection complete
 ```
 
-
+### Generate random Bernoulli code: 
+```
+code=bernoulli_random_code(n_bits=9, Nwords=100, p=0.25)
+print(code)
+```
 
 
 ### Checking for Empty and Full Sets
@@ -72,17 +76,6 @@ You can identify obstructions to the code being a good code:
 is_maximal_intersection_complete, num_obstructions = code.Obstructions()
 print(is_maximal_intersection_complete)
 print(num_obstructions)
-```
-
-## Examples
-
-You can use predefined examples from the `examples.py` file:
-
-```python
-from combinatorial_codes import example_code
-
-example = example_code("eyes")
-print(example)
 ```
 
 ## Dependencies

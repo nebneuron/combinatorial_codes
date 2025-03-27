@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="combinaorial_codes",
+    name="combinatorial_codes",
     version="0.1.0",
     description="A Python package for manipulating combinatorial codes",
     long_description="",
@@ -13,7 +13,7 @@ setup(
     python_requires=">=3.11",
     install_requires=[
         "numba>=0.57.0",  # Adjust version as needed
-        "numpy>=2.1.3",  # Adjust version as needed
+        "numpy",  # Adjust version as needed
         "gudhi>=3.11.0",  # Adjust version as needed
     ],
     classifiers=[

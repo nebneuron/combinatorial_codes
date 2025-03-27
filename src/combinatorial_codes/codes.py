@@ -14,12 +14,11 @@ MaximalWordLimit=20; # this is the maximal number of maximal words that we can h
 SizeType=np.uint8 # no more than size =64 is supported for computing nerves of maximal words
 # possible_types={8: np.uint8, 16: np.uint16, 32: np.uint32, 64: np.uint64}
 
+
+# Precompute the corresponding Numba types.
 WORD_TYPE=np.uint32
 WORD_TYPE_NUMBA = from_dtype(np.dtype(WORD_TYPE))
 WORD_TYPE_numba=types.uint32
-
-# Precompute the corresponding Numba types.
-KEY_TYPE = from_dtype(np.dtype(SizeType))
 VALUE_TYPE = types.Array(from_dtype(np.dtype(WORD_TYPE)), 1, 'C')
 
 
@@ -324,13 +323,12 @@ def find_maximal_words(words:np.ndarray,  unique_sizes: np.ndarray , indices_by_
 def lattice_dictionary_by_size(m:int):
     if m<=0 or m>MaximalWordLimit:
         raise ValueError(f"The number of maximal words is larger than {MaximalWordLimit}")
-    word_type=WORD_TYPE #set_word_type(m)
     total=1<<m # 2**m
-    lattice_words = np.arange(total, dtype=word_type)
+    lattice_words = np.arange(total, dtype=WORD_TYPE)
     sizes=np.array([count_bits(x) for x in lattice_words], dtype=SizeType)
-    d = Dict.empty(key_type=KEY_TYPE, value_type=VALUE_TYPE)
-    for k in range(0,m+1):
-        d[k]=lattice_words[sizes==k]
+    d = Dict.empty(key_type=SizeType, value_type=VALUE_TYPE)
+    for k in np.arange(0, m+1,dtype=SizeType):
+        d[k] = lattice_words[sizes==k]
     return d
 
 @njit
@@ -505,64 +503,4 @@ def Obstructions(C: CombinatorialCode):
     return is_maximal_intersection_complete, int(N_obstructions)
 
 
-
-###############  TDA utilities ############################
-
-def compute_homology_from_facets(facets, max_dimension=np.inf):
-    """
-    Compute the persistence diagram and count the number of infinite bars by dimension.
-    persistence, infinite_bar_counts = compute_homology_from_facets(facets, max_dimension=2)
-    """
-
-    st = gudhi.SimplexTree() # initializes a simplex tree
-
-    # Insert each facet; Gudhi automatically adds lower-dimensional faces.
-    for facet in facets:
-        st.insert(facet)
-
-    # Ensure the filtration is non-decreasing. 
-    st.make_filtration_non_decreasing()
-    if not np.isinf(max_dimension):
-        st.prune_above_dimension(max_dimension) # remove simplices above given dimension, if we don't want to compute all possible homology groups
-
-    persistence = st.persistence(persistence_dim_max=True) # persistence_dim_max=True tells to compute all homology groups up to maximal dimension
-
-    # Extract infinite bars (features with death == infinity).
-    infinite_bars = [(dim, (birth, death))
-                     for dim, (birth, death) in persistence if death == float("inf")]
-    
-     # Count infinite bars by dimension.
-    infinite_bar_counts = {}
-    for dim, _ in infinite_bars:
-        infinite_bar_counts[dim] = infinite_bar_counts.get(dim, 0) + 1
-    
-    return persistence, infinite_bar_counts
-
-
-def homology_is_trivial(facets, max_dimension=np.inf): 
-    """
-    Check if the homology of the simplicial complex defined by the facets is that of a contractible space.
-    homology_is_trivial(facets)
-
-    Example:        
-    facets = [[0, 1], [1, 2],[2, 3], [0, 3], [0,5], [5,6],[6,0], [10,11]]
-    homology_is_trivial(facets) # False (the space is not contractible)
-    """
-    if len(facets) == 0:
-        raise ValueError("Facets must be non-empty.")
-    
-    st = gudhi.SimplexTree() # initializes a simplex tree
-
-    # Insert each facet; Gudhi automatically adds lower-dimensional faces.
-    for facet in facets:
-        st.insert(facet)
-
-    # Ensure the filtration is non-decreasing. 
-    st.make_filtration_non_decreasing()
-    if not np.isinf(max_dimension):
-        st.prune_above_dimension(max_dimension) # remove simplices above given dimension, if we don't want to compute all possible homology groups
-
-    st.persistence(persistence_dim_max=True) # persistence_dim_max=True tells to compute all homology groups up to maximal dimension
-    Betti_numbers = st.betti_numbers()
-    return (Betti_numbers[0] == 1) and (sum(Betti_numbers[1:])==0)
 

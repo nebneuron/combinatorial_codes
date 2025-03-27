@@ -1,6 +1,6 @@
 # __init__.py
-from .codes import homology_is_trivial
-from .codes import compute_homology_from_facets
+from .tda import homology_is_trivial
+from .tda import compute_homology_from_facets
 from .codes import CombinatorialCode
 from .codes import WORD_TYPE
 from .codes import boolean_matrix_to_array_of_words

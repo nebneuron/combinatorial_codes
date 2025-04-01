@@ -78,13 +78,6 @@ print(is_maximal_intersection_complete)
 print(num_obstructions)
 ```
 
-## Dependencies
-
-The package requires the following dependencies:
-
-- `numba>=0.57.0`
-- `numpy>=2.1.3`
-- `gudhi>=3.11.0`
 
 ## License
 

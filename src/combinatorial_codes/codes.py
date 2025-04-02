@@ -7,148 +7,10 @@ from numba import jit, njit, typed, types
 from numba.typed import Dict # we need this to define a typed dictionary 
 import gudhi
 from .tda import homology_is_trivial
-
-# Define a Numba array type: 1D float64 array in C-contiguous layout.
-array_type = types.Array(types.int64, 1, 'C')
-MaximalWordLimit=30; # this is the maximal number of maximal words in a code that we can handle.
-# The maximal number of bits in a word is 64, but we can only handle 30 maximal words
-# This is  because the size of the lattice is 2**m, and we need to store the lattice in memory.
-SizeType=np.uint8 # no more than size =64 is supported for computing nerves of maximal words
-# possible_types={8: np.uint8, 16: np.uint16, 32: np.uint32, 64: np.uint64}
-
-
-# Precompute the corresponding Numba types.
-WORD_TYPE=np.uint32
-WORD_TYPE_NUMBA = from_dtype(np.dtype(WORD_TYPE))
-WORD_TYPE_numba=types.uint32
-VALUE_TYPE = types.Array(from_dtype(np.dtype(WORD_TYPE)), 1, 'C')
-
-
-
-"""  the fillowing is not currently used, but it is a good idea to keep it for future reference
-WORD_TYPE8=np.uint8
-WORD_TYPE16=np.uint16
-WORD_TYPE32=np.uint32
-WORD_TYPE64=np.uint64
-@njit
-def set_word_type(n_bits:int):
-    possible_types_keys=np.array([8,16,32,64],dtype=np.uint16)
-    if n_bits > 64:
-        raise ValueError(f"The number of bits larger than {64} is not supported")
-    actual_n_bits=min([x for x in possible_types_keys if x>=n_bits])
-    # print(f"Setting the word type to {actual_n_bits} bits")
-    if actual_n_bits == 8:
-        return WORD_TYPE8
-    elif actual_n_bits == 16:
-        return WORD_TYPE16
-    elif actual_n_bits == 32:
-        return WORD_TYPE32
-    elif actual_n_bits == 64:
-        return WORD_TYPE64
-    else:
-        raise ValueError("Unsupported bit width")
-"""
-
-# some combinatorial helper functions, implemented using numba
-@njit
-def comb(n, k):
-    """Compute the binomial coefficient 'n choose k'."""
-    if k > n:
-        return 0
-    res = 1
-    for i in range(1, k + 1):
-        res = res * (n - i + 1) // i
-    return res
-
-@njit
-def count_bits(x):
-    count = 0
-    while x:
-        count += 1
-        x = x & (x - 1)
-    return count
-
-
-
-
-@njit
-def custom_bit_length(x):
-    """
-    Compute the bit length of a positive integer x.
-    Returns 0 if x is 0.
-    """
-    temp=x
-    length = 0
-    while temp:
-        length += 1
-        temp //= 2  # integer division
-    return length
-
-
-@jit(nopython=True)
-def intersection_of_codewords_from_bits(x, a):
-    """
-    Given:
-      - x: an  unsigned integer
-      - a: a NumPy vector of numbers (with length >= the number of set bits in x)
-    Returns a single numpy unsigned integer that represents the intersection of the codewords 
-    in a that correspond to the bits set in x.
-    """
-    if x==0:
-        raise ValueError("The input x must be a positive integer")
-    dtype_x=type(x)
-    dtype_a=type(a[0])
-    encountered_set_bit=False
-    for i in range(custom_bit_length(x)):
-        # Check if the i-th bit is set.
-        # Using bitwise shift: (1 << i) is computed as dtype_x(1) << dtype_x(i).
-        if x & (dtype_x(1) << dtype_x(i)):
-            if not encountered_set_bit:
-                result=a[i]
-                encountered_set_bit=True
-            else:
-                result=  result  &   a[i]
-    return  dtype_a(result)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-def empty_list(dtype):
-    return np.zeros(0,dtype=dtype)
-
-def bit_order(a: int, b: int) -> bool:
-    # Returns True if every bit in a is <= every bit in b (i.e., if a's 1s are a subset of b's 1s)
-    return (a & ~b) == 0
+from .utils import * 
 
 
 # array_of_vectors = [[],[1], [9], [1,9],[-1,1, 22, 3, 4], [5, 6, 7, 8,  10],[1], [5,6],[7,8,10],[10],[1],[],[-1,1, 22, 3, 4]]
-
-@jit(nopython=True) 
-def generate_binary_strings(n : int ) -> np.ndarray:
-    """ Lattice=generate_binary_strings(n)
-    Returns a boolean matrix of shape (2**n, n) 
-    where each row is a different combination of True/False values,
-    sampling the entire Boolean lattice.
-    """
-    num_strings = 1<< n # 2**n
-    binary_strings = np.zeros((num_strings, n), dtype=np.bool_)
-    for i in range(num_strings):
-        for j in range(n):
-            binary_strings[i, j] = (i >> j) & 1
-    return binary_strings
-
-
-
 
 def boolean_matrix_to_array_of_words(B:np.ndarray, dtype ) -> np.ndarray:
     """Here B is a numpy binary matrix. The function returns an array of lists of integers of type dtype
@@ -183,98 +45,6 @@ def array_of_words_to_vectors_of_integers(words:np.ndarray,  n_bits:int) -> List
     B=array_of_words_to_boolean_matrix(words, n_bits)
     return [[int(y) for y in list(np.where(B[i,:])[0])] for i in range(n)]
 
-@jit(nopython=True) # here we optimize for speed, as this function is a heavy lifter
-def inclusion_relation(a: np.ndarray , b : np.ndarray) -> np.ndarray:
-    """This evaluates the inclusion relation between two sets of words: a and b
-    Args:
-        a (np.ndarray): an array of n words a[i] of type dtype
-        b (np.ndarray): an array of m words b[i] of type dtype
-    Returns:
-        np.ndarray: a matrix of size n x m of booleans. The entry (i,j) is True if a[i] is a subset of b[j]
-    usage: R=inclusion_relation(a,b)
-    """
-    n=a.shape[0]
-    m=b.shape[0]
-    result = np.zeros((n, m), dtype=np.bool_) 
-    for i in range(n):
-        for j in range(m):
-            result[i,j]=( (a[i] & ~b[j]) == 0 )
-    return result
-
-@njit
-def link_facets(x: WORD_TYPE, maximal_words: np.ndarray) -> np.ndarray:
-    """ facets=link_facets(x, maximal_words)
-    Args:
-        x (WORD_TYPE): a word
-        maximal_words (numpy.ndarray): an array of maximal words
-    Returns:
-        facets: a list of the facets of the link_x(simplicial complex( maximal_words))
-        Here each facet has the type of WORD_TYPE
-    """
-    m=len(maximal_words)
-    x_in_facets=np.array([ ((x & f)==x) for f in maximal_words],dtype=np.bool_)
-    relevant_maximal_words=maximal_words[x_in_facets]
-    n_facets=relevant_maximal_words.shape[0]
-    facets = np.empty( n_facets, dtype=WORD_TYPE)
-    for i in range(n_facets):
-        facets[i]=(~x) & relevant_maximal_words[i]
-    return facets
-
-
-
-@jit(nopython=True) # here we optimize for speed, as this function is a heavy lifter
-def x_is_a_subset_of_any_in_List(x: type, L : NumbaList) -> bool:
-    """This evaluates the inclusion relation between two sets of words: a and b
-    Args:
-        x : dtype
-        b (np.ndarray): an array of m words b[i] of type dtype
-    Returns:
-        np.ndarray: a matrix of size n x m of booleans. The entry (i,j) is True if a[i] is a subset of b[j]
-    usage: logical=x_is_a_subset_of_any_in_List(x,L)
-    """
-    for b in L:
-            if ( type(b)(x) & ~( b)) == 0:
-                return True
-    return False
-
-
-
-
-
-@jit(nopython=True) # here we optimize for speed, as this function is a heavy lifter
-def x_is_a_superset_of_any_in_List(x: type, L : NumbaList) -> bool:
-    """This evaluates the inclusion relation between two sets of words: a and b
-    Args:
-        x : dtype
-        b (np.ndarray): an array of m words b[i] of type dtype
-    Returns:
-        np.ndarray: a matrix of size n x m of booleans. The entry (i,j) is True if a[i] is a subset of b[j]
-    usage: logical=x_is_a_subset_of_any_in_List(x,L)
-    """
-    if len(L)==0:
-        return False
-    for b in L:
-            if ( b & ~( type(b)(x))) == 0:
-                return True
-    return False
-
-
-
-
-
-
-
-
-
-
-def sizes_of_words(words:np.ndarray) -> np.ndarray:
-    """Here words is an array of integers. The function returns an array of integers
-    Usage: s=sizes_of_words(words)
-    """
-    return np.array([ x.bit_count()  for i,x in enumerate(words)])
-
-
-
 
 def convert_to_boolean_matrix(array_of_vectors):
     """ The input array_of_vectors is an array of vectors that represent neurons in each codeword.
@@ -297,102 +67,8 @@ def convert_to_boolean_matrix(array_of_vectors):
     return B
 
 
-@jit(nopython=True) # here we optimize for speed, as this function is a heavy lifter
-def find_maximal_words(words:np.ndarray,  unique_sizes: np.ndarray , indices_by_size : Dict, dtype) -> np.ndarray:
-    """Here words is an array of integers. The function returns an array of integers
-    Usage: s=sizes_of_words(words)
-    """
-    n=words.shape[0]
-    if n==0:
-        return np.zeros(0,dtype= dtype)
-    max_size=  unique_sizes.max()
-    max_words=NumbaList(words[indices_by_size[ max_size]])
-    for u in range(len(unique_sizes)-1,-1,-1):
-        for w in words[indices_by_size[unique_sizes[u]]]:
-             if not x_is_a_subset_of_any_in_List(w, max_words):
-                max_words.append(w)
-    # finally we return the result as a numpy array
-    result = np.empty(len(max_words), dtype=dtype)
-    for i in range(len(max_words)):
-        result[i] = max_words[i]
-    return result
 
 
-
-
-
-@njit
-def lattice_dictionary_by_size(m:int):
-    if m<=0 or m>MaximalWordLimit:
-        raise ValueError(f"The number of maximal words is larger than {MaximalWordLimit}")
-    total=1<<m # 2**m
-    lattice_words = np.arange(total, dtype=WORD_TYPE)
-    sizes=np.array([count_bits(x) for x in lattice_words], dtype=SizeType)
-    d = Dict.empty(key_type=SizeType, value_type=VALUE_TYPE)
-    for k in np.arange(0, m+1,dtype=SizeType):
-        d[k] = lattice_words[sizes==k]
-    return d
-
-@njit
-def nerve_of_max_words(maximal_words): 
-    """ nerve_faces, intersection_list =nerve_of_max_words(maximal_words)
-    Args:
-        maximal_words (numpy.ndarray): a numpy array of maximal words
-
-    Returns:
-        nerve_dict: a dictionary of the nerve of maximal words
-    """
-    m = maximal_words.shape[0]
-    if m > MaximalWordLimit:
-        raise ValueError(f"The number of maximal words is larger than {MaximalWordLimit}")
-    nerve_word_type = WORD_TYPE # set_word_type(m)
-    # Compute the Boolean lattice on the maximal words.
-    lattice_dictionary = lattice_dictionary_by_size(m)
-    # Initialize faces with the vertices of the nerve (they are always in the nerve).
-    faces = NumbaList([nerve_word_type(1 << j) for j in range(m)]) 
-    intersection_list = NumbaList(maximal_words)
-    minimal_non_faces = NumbaList.empty_list(WORD_TYPE_NUMBA )
-    for k in range(2, m + 1):
-        number_of_non_faces_in_k = 0
-        for x in lattice_dictionary[k]:
-            if x_is_a_superset_of_any_in_List(x, minimal_non_faces):
-                number_of_non_faces_in_k += 1
-                continue
-            else:
-                # Check if x is a face.
-                intersection = intersection_of_codewords_from_bits(x, maximal_words)
-                if intersection > 0:  # if the intersection is not empty, add x to faces.
-                    faces.append(x)
-                    intersection_list.append(intersection)
-                else:  # if the intersection is empty, add x to minimal non-faces.
-                    minimal_non_faces.append(x)
-                    number_of_non_faces_in_k += 1
-        if number_of_non_faces_in_k >= lattice_dictionary[k].shape[0]:
-            break  # Stop searching for faces, since there no faces left to find.
-    return faces,intersection_list 
-
-
-@njit
-def simplicial_violators_from_words(words: np.ndarray, maximal_words: np.ndarray) -> NumbaList:
-    """ simplicial_violators_from_words(words, maximal_words)
-    Args:
-        words (numpy.ndarray): a numpy array of words
-        maximal_words (numpy.ndarray): a numpy array of maximal words
-    Returns:
-        simplicial_violators: a list of simplicial violators
-    """
-    nerve_faces, intersection_list =nerve_of_max_words(maximal_words)
-    # Convert the typed list 'intersection_list' to a NumPy array.
-    n = len(intersection_list)
-    tmp = np.empty(n, dtype=WORD_TYPE)  # WORD_TYPE is your NumPy type, e.g. np.uint32
-    for i in range(n):
-        tmp[i] = intersection_list[i]
-    unique_intersections = np.unique(tmp)
-    simplicial_violators = NumbaList.empty_list(WORD_TYPE_numba)
-    for x  in  unique_intersections: 
-        if not (x in words):
-            simplicial_violators.append(x)
-    return simplicial_violators
 
 
 
@@ -438,9 +114,9 @@ class CombinatorialCode:
             n_bits=B.shape[1]
             self.dtype= WORD_TYPE# set_word_type(n_bits)
             words=np.unique(boolean_matrix_to_array_of_words(B,self.dtype))
-            sizes=sizes_of_words(words)
+            sizes=np.array([ x.bit_count()  for x in words]) 
             self.unique_sizes, indices = np.unique(sizes, return_inverse=True)
-            indices_by_size=Dict.empty(key_type=types.int64, value_type=array_type)
+            indices_by_size=Dict.empty(key_type=types.int64, value_type=types.Array(types.int64, 1, 'C'))
             for (i,u) in enumerate(self.unique_sizes):
                 indices_by_size[int(u)]=   np.where(indices == i)[0]
             self.indices_by_size=indices_by_size

@@ -33,4 +33,4 @@ def bernoulli_random_code(n_bits: int, Nwords: int, p: float):
     # then transform it to have the same distribution as 1 - U.
     # Checking (1 - U) <= p produces True with probability p.
     R = (1 - np.random.rand(Nwords, n_bits)) <= p
-    return CombinatorialCode([np.where(R[i])[0] for i in range(Nwords)])
+    return CombinatorialCode(R,"boolean_matrix")

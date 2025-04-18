@@ -35,7 +35,7 @@ def array_of_words_to_boolean_matrix(words:np.ndarray, n_bits:int) -> np.ndarray
     return ((words.reshape(-1,1) >> np.arange(n_bits)) & 1).astype(np.bool_)
 
 
-def array_of_words_to_vectors_of_integers(words:np.ndarray,  n_bits:int) -> List[List[int]]:
+def array_of_words_to_vectors_of_integers(words:np.ndarray,  n_bits:int, translation_dict:Dict=None) -> List[List[int]]:
     """Here words is an array of integers. The function returns a list of lists of integers
     Usage: v=array_of_words_to_vectors_of_integers(words)
     """
@@ -43,7 +43,10 @@ def array_of_words_to_vectors_of_integers(words:np.ndarray,  n_bits:int) -> List
     if n==0:
         return []
     B=array_of_words_to_boolean_matrix(words, n_bits)
-    return [[int(y) for y in list(np.where(B[i,:])[0])] for i in range(n)]
+    if translation_dict is None:
+        return [[int(y) for y in list(np.where(B[i,:])[0])] for i in range(n)]
+    else:
+        return [[translation_dict[int(y)] for y in list(np.where(B[i,:])[0])] for i in range(n)]
 
 
 def convert_to_boolean_matrix(array_of_vectors):
@@ -67,7 +70,34 @@ def convert_to_boolean_matrix(array_of_vectors):
     return B
 
 
-
+def convert_to_array_of_words(array_of_vectors):
+    """ 
+    converted_words, inverse_d=convert_to_array_of_words(array_of_vectors)
+    The input array_of_vectors is an array of vectors that represent neurons in each codeword.
+    The neuron numbers are assumed to be integers. These integers do not need to be consecutive, or even positive.        
+    The function returns a tuple of two elements:
+    - converted_words: an array of integers that represent the codewords
+    - inverse_d: a dictionary that maps our vertices into non-negative numbers in the range(n)
+    """
+    n_words=len(array_of_vectors)
+    # first we figure out the possible vertices
+    vertex_set=set()
+    for v in array_of_vectors: 
+        vertex_set=vertex_set.union(v)
+    vertex_set=sorted(list(vertex_set))
+    n_bits=len(vertex_set)
+    # precompute the shift table
+    shift_table=np.array( [1<<i for i in range(n_bits)]  ,dtype=WORD_TYPE)
+    if n_bits>MAX_NUMBER_OF_BITS:
+        raise ValueError("The number of bits ={n_bits} is too large. Currently we do not allow more than {MAX_NUMBER_OF_BITS}. ")
+    # d is  dictionary that maps our vertices into non-negative numbers in the range(n)
+    d={vertex_set[i] :i for i in range(n_bits) }
+    inverse_d={d[k]:k for k in d}
+    converted_words=np.zeros(n_words,dtype=WORD_TYPE)
+    for (i,v) in enumerate(array_of_vectors):
+        x=np.array([d[k] for k in v],dtype=np.int64)
+        converted_words[i]=shift_table[x].sum()
+    return  converted_words, inverse_d
 
 
 
@@ -98,8 +128,11 @@ class CombinatorialCode:
     - __repr__(): returns a string representation of the code
     - show(): prints the string representation
 """
-    def __init__(self, array_of_vectors: List[List[int]]):
-        if not array_of_vectors:
+    def __init__(self, array_of_vectors: List[List[int]], method: str = "array_of_vectors"):
+        possible_methods = ["array_of_vectors", "numpy codewords", "boolean_matrix"]
+        if method not in possible_methods:
+            raise ValueError(f"Invalid method: {method}. Possible methods are: {possible_methods}")
+        if len(array_of_vectors)==0:
             # No words were passed
             self.words = np.zeros(0,dtype=np.uint8)
             self.dtype=np.uint8
@@ -110,11 +143,23 @@ class CombinatorialCode:
             self.n_bits=0
             self.maximal_words= self.words
         else:
-            B=convert_to_boolean_matrix(array_of_vectors)
-            n_bits=B.shape[1]
-            self.dtype= WORD_TYPE# set_word_type(n_bits)
-            words=np.unique(boolean_matrix_to_array_of_words(B,self.dtype))
+            self.dtype= WORD_TYPE 
+            if method == "array_of_vectors":
+                converted_words, translation_dict=convert_to_array_of_words(array_of_vectors)
+                n_bits=max(list(translation_dict.keys()))+1
+                words=np.unique(converted_words)
+            elif method=="boolean_matrix":
+                B=array_of_vectors
+                n_bits=B.shape[1]
+                words=np.unique(boolean_matrix_to_array_of_words(B,self.dtype))
+                translation_dict={i:i for i in range(n_bits)}
+            else: 
+                raise ValueError(f"Invalid method: {method}. The other methods are not implemented yet.")
+            # now we can set the attributes
+            self.n_bits=n_bits
             sizes=np.array([ x.bit_count()  for x in words]) 
+            self.translation_dict=translation_dict
+            sizes=np.array([ x.bit_count()  for x in words])     
             self.unique_sizes, indices = np.unique(sizes, return_inverse=True)
             indices_by_size=Dict.empty(key_type=types.int64, value_type=types.Array(types.int64, 1, 'C'))
             for (i,u) in enumerate(self.unique_sizes):
@@ -122,7 +167,6 @@ class CombinatorialCode:
             self.indices_by_size=indices_by_size
             self.words=words
             self.sizes=sizes
-            self.n_bits=B.shape[1]
             self.n_words=words.shape[0]
             self.min_size, self.max_size = self.unique_sizes.min(), self.unique_sizes.max()
             self.maximal_words= find_maximal_words(words, self.unique_sizes, indices_by_size,self.dtype)
@@ -140,8 +184,8 @@ class CombinatorialCode:
             return header
         else:
             nonmaximal_words = self.words[~np.isin(self.words, self.maximal_words)]
-            maximal_words_line=f"Maximal words: {array_of_words_to_vectors_of_integers(self.maximal_words,self.n_bits)}\n"
-            nonmaximal_words_line=f"Non-maximal words: {array_of_words_to_vectors_of_integers(nonmaximal_words,self.n_bits)}\n"
+            maximal_words_line=f"Maximal words: {array_of_words_to_vectors_of_integers(self.maximal_words,self.n_bits,self.translation_dict)}\n"
+            nonmaximal_words_line=f"Non-maximal words: {array_of_words_to_vectors_of_integers(nonmaximal_words,self.n_bits,self.translation_dict)}\n"
             return header+ maximal_words_line+nonmaximal_words_line  +"\n"
     def show(self):
         print(self.__repr__())

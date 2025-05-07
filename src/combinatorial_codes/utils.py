@@ -16,6 +16,7 @@ MaximalWordLimit=40; # this is currently the maximal number of maximal words in 
 # Precompute some numba types that we will use later
 array_type = types.Array(types.int64, 1, 'C') # a Numba array type: 1D float64 array in C-contiguous layout.
 WORD_TYPE=np.uint32
+MAX_NUMBER_OF_BITS = np.iinfo(WORD_TYPE).bits
 WORD_TYPE_NUMBA = from_dtype(np.dtype(WORD_TYPE))
 VALUE_TYPE = types.Array(from_dtype(np.dtype(WORD_TYPE)), 1, 'C')
 SizeType=np.uint8 # no more than size =64 is supported for computing nerves of maximal words

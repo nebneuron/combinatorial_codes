@@ -12,11 +12,11 @@ from .utils import *
 
 """ 
 Example: 
-
 C=example_code( "example by Milo")
 violators=C.simplicial_violators()
-x=[4, 5, 12, 20, 32, 64, 65, 144, 256, 528, 1040, 1536, 2048, 2052, 2056, 2320, 18432]
-array_representation= sorted(array_of_words_to_vectors_of_integers(violators, C.n_bits), key=lambda x: (len(x), x))
+array_representation = array_of_words_to_vectors_of_integers(violators, C.n_bits)
+print('simplicial violaters: ', array_representation)
+obstruction_information=C.Obstructions()
 """
 
 

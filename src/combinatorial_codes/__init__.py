@@ -5,6 +5,7 @@ from .codes import CombinatorialCode
 from .codes import WORD_TYPE
 from .codes import boolean_matrix_to_array_of_words
 from .codes import convert_to_boolean_matrix
+from .codes import array_of_words_to_vectors_of_integers
 from .utils import find_maximal_words
 from .codes import Obstructions
 from .utils import x_is_a_subset_of_any_in_List
@@ -35,7 +36,8 @@ __all__ = [
     "x_is_a_subset_of_any_in_List",
     "NumbaList", "homology_is_trivial", "compute_homology_from_facets", 
     "example_code", "example_dictionary","bernoulli_random_code",
-    "intersections_list_2","simplicial_violators_from_words"
+    "intersections_list_2","simplicial_violators_from_words",
+    "array_of_words_to_vectors_of_integers"
 ]
 
 

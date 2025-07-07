@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+setup.py
+src/combinatorial_codes/__init__.py
+src/combinatorial_codes/codes.py
+src/combinatorial_codes/examples.py
+src/combinatorial_codes/tda.py
+src/combinatorial_codes/utils.py
+src/combinatorial_codes.egg-info/PKG-INFO
+src/combinatorial_codes.egg-info/SOURCES.txt
+src/combinatorial_codes.egg-info/dependency_links.txt
+src/combinatorial_codes.egg-info/requires.txt
+src/combinatorial_codes.egg-info/top_level.txt

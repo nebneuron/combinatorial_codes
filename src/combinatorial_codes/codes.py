@@ -10,6 +10,17 @@ from .tda import homology_is_trivial
 from .utils import * 
 
 
+""" 
+Example: 
+
+C=example_code( "example by Milo")
+violators=C.simplicial_violators()
+x=[4, 5, 12, 20, 32, 64, 65, 144, 256, 528, 1040, 1536, 2048, 2052, 2056, 2320, 18432]
+array_representation= sorted(array_of_words_to_vectors_of_integers(violators, C.n_bits), key=lambda x: (len(x), x))
+"""
+
+
+
 # array_of_vectors = [[],[1], [9], [1,9],[-1,1, 22, 3, 4], [5, 6, 7, 8,  10],[1], [5,6],[7,8,10],[10],[1],[],[-1,1, 22, 3, 4]]
 
 def boolean_matrix_to_array_of_words(B:np.ndarray, dtype ) -> np.ndarray:
@@ -44,10 +55,10 @@ def array_of_words_to_vectors_of_integers(words:np.ndarray,  n_bits:int, transla
         return []
     B=array_of_words_to_boolean_matrix(words, n_bits)
     if translation_dict is None:
-        return [[int(y) for y in list(np.where(B[i,:])[0])] for i in range(n)]
+        result= [[int(y) for y in list(np.where(B[i,:])[0])] for i in range(n)]
     else:
-        return [[translation_dict[int(y)] for y in list(np.where(B[i,:])[0])] for i in range(n)]
-
+         result=  [[translation_dict[int(y)] for y in list(np.where(B[i,:])[0])] for i in range(n)]
+    return sorted(result, key=lambda x: (len(x), x)) # sort by length and then lexicographically
 
 def convert_to_boolean_matrix(array_of_vectors):
     """ The input array_of_vectors is an array of vectors that represent neurons in each codeword.

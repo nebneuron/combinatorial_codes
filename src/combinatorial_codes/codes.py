@@ -28,7 +28,7 @@ def boolean_matrix_to_array_of_words(B:np.ndarray, dtype ) -> np.ndarray:
     Usage: w=boolean_matrix_to_array_of_words(B)
     """
     n,n_bits=B.shape
-    if n_bits>16:
+    if n_bits>MAX_NUMBER_OF_BITS:
         raise ValueError("The number of columns in the boolean matrix is too large")
     if n==0:
         return np.zeros(0,dtype=dtype)

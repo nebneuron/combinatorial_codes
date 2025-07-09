@@ -185,8 +185,8 @@ class CombinatorialCode:
         return bool(self.min_size==0)
     def has_full_set(self):
         return bool(self.max_size==self.n_bits)
-    def simplicial_violators(self):
-        return simplicial_violators_from_words(self.words, self.maximal_words)
+    def simplicial_violators(self, enforce_maximal_word_limit: bool=True):
+        return simplicial_violators_from_words(self.words, self.maximal_words, enforce_maximal_word_limit)
     def Obstructions(self):
         return Obstructions(self)
     def __repr__(self):

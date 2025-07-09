@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="combinatorial_codes",
-    version="0.1.0",
+    version="0.1.2",
     description="A Python package for manipulating combinatorial codes",
     long_description="",
     author="Vladimir Itskov",

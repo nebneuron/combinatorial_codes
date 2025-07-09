@@ -15,7 +15,7 @@ MaximalWordLimit=40; # this is currently the maximal number of maximal words in 
 
 # Precompute some numba types that we will use later
 array_type = types.Array(types.int64, 1, 'C') # a Numba array type: 1D float64 array in C-contiguous layout.
-WORD_TYPE=np.uint32
+WORD_TYPE=np.uint64
 MAX_NUMBER_OF_BITS = np.iinfo(WORD_TYPE).bits
 WORD_TYPE_NUMBA = from_dtype(np.dtype(WORD_TYPE))
 VALUE_TYPE = types.Array(from_dtype(np.dtype(WORD_TYPE)), 1, 'C')
@@ -283,7 +283,7 @@ def lattice_slice(m:int, k:int, minimal_non_faces: NumbaList) -> np.ndarray:
     Inputs: 
     m is the number of vertices in the lattice, 
     k is the number of bits in each word.
-    The function returns a numpy array of integers of typr WORD_TYPE.
+    The function returns a numpy array of integers of type WORD_TYPE.
     """
     # first we check the sanity of the inputs 
     if m>MaximalWordLimit:
@@ -305,7 +305,7 @@ def lattice_slice(m:int, k:int, minimal_non_faces: NumbaList) -> np.ndarray:
 
 
 @njit
-def intersections_list_2(maximal_words: np.ndarray) -> np.ndarray: 
+def intersections_list_2(maximal_words: np.ndarray, enforce_maximal_word_limit: bool=True) -> np.ndarray: 
     """ 
     Args:
     maximal_words (numpy.ndarray): a numpy array of maximal words
@@ -316,7 +316,7 @@ def intersections_list_2(maximal_words: np.ndarray) -> np.ndarray:
     as those are not simplicial violators. 
     """
     m = maximal_words.shape[0]
-    if m > MaximalWordLimit:
+    if enforce_maximal_word_limit and (m > MaximalWordLimit):
         raise ValueError(f"The number of maximal words = {m} is larger than {MaximalWordLimit}")
     nerve_word_type = WORD_TYPE # set_word_type(m)
     # Initialize the intersection the minimal_non_faces lists
@@ -350,7 +350,7 @@ def intersections_list_2(maximal_words: np.ndarray) -> np.ndarray:
 
 
 @njit
-def simplicial_violators_from_words(words: np.ndarray, maximal_words: np.ndarray) -> NumbaList:
+def simplicial_violators_from_words(words: np.ndarray, maximal_words: np.ndarray, enforce_maximal_word_limit: bool=True) -> NumbaList:
     """ simplicial_violators_from_words(words, maximal_words)
     Args:
     words (numpy.ndarray): a numpy array of words
@@ -361,7 +361,7 @@ def simplicial_violators_from_words(words: np.ndarray, maximal_words: np.ndarray
     # first, make sure that words is sorted 
     sorted_words = words if (np.all(words[:-1] < words[1:])) else np.sort(words)
     n_words=len(sorted_words)
-    unique_intersections  =intersections_list_2(maximal_words)
+    unique_intersections  =intersections_list_2(maximal_words, enforce_maximal_word_limit)
     n_uv=unique_intersections.shape[0]
     is_violator=np.empty(n_uv, dtype=np.bool_)
     # we can assume that unique_intersections are sorted, since they were obtained from np.unique

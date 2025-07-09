@@ -43,7 +43,8 @@ def array_of_words_to_boolean_matrix(words:np.ndarray, n_bits:int) -> np.ndarray
     n=len(words)
     if n==0:
         return np.zeros((0,n_bits),dtype=np.bool_)
-    return ((words.reshape(-1,1) >> np.arange(n_bits)) & 1).astype(np.bool_)
+    shifts = np.arange(n_bits, dtype=WORD_TYPE)
+    return ((words.reshape(-1,1) >>  shifts) & 1).astype(np.bool_)
 
 
 def array_of_words_to_vectors_of_integers(words:np.ndarray,  n_bits:int, translation_dict:Dict=None) -> List[List[int]]:

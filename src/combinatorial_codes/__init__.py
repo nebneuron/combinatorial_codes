@@ -1,5 +1,5 @@
 # __init__.py
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .tda import homology_is_trivial
 from .tda import compute_homology_from_facets

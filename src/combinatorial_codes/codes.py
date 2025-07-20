@@ -82,34 +82,6 @@ def convert_to_boolean_matrix(array_of_vectors):
     return B
 
 
-def convert_to_array_of_words(array_of_vectors):
-    """ 
-    converted_words, inverse_d=convert_to_array_of_words(array_of_vectors)
-    The input array_of_vectors is an array of vectors that represent neurons in each codeword.
-    The neuron numbers are assumed to be integers. These integers do not need to be consecutive, or even positive.        
-    The function returns a tuple of two elements:
-    - converted_words: an array of integers that represent the codewords
-    - inverse_d: a dictionary that maps our vertices into non-negative numbers in the range(n)
-    """
-    n_words=len(array_of_vectors)
-    # first we figure out the possible vertices
-    vertex_set=set()
-    for v in array_of_vectors: 
-        vertex_set=vertex_set.union(v)
-    vertex_set=sorted(list(vertex_set))
-    n_bits=len(vertex_set)
-    # precompute the shift table
-    shift_table=np.array( [1<<i for i in range(n_bits)]  ,dtype=WORD_TYPE)
-    if n_bits>MAX_NUMBER_OF_BITS:
-        raise ValueError("The number of bits ={n_bits} is too large. Currently we do not allow more than {MAX_NUMBER_OF_BITS}. ")
-    # d is  dictionary that maps our vertices into non-negative numbers in the range(n)
-    d={vertex_set[i] :i for i in range(n_bits) }
-    inverse_d={d[k]:k for k in d}
-    converted_words=np.zeros(n_words,dtype=WORD_TYPE)
-    for (i,v) in enumerate(array_of_vectors):
-        x=np.array([d[k] for k in v],dtype=np.int64)
-        converted_words[i]=shift_table[x].sum()
-    return  converted_words, inverse_d
 
 
 

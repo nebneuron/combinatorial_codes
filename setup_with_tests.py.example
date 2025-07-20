@@ -1,33 +1,48 @@
-from setuptools import setup, find_packages, Extension
+"""
+Example of how to run tests during installation (optional, not recommended for most use cases)
+"""
+
+from setuptools import setup, find_packages, Extension, Command
 from setuptools.command.build_ext import build_ext
 import numpy
 import sys
-import platform
+import subprocess
+import os
+
+class TestCommand(Command):
+    """Custom command to run tests during installation"""
+    description = 'run tests after installation'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        """Run the test suite"""
+        # Install test dependencies first
+        subprocess.check_call([
+            sys.executable, '-m', 'pip', 'install', 'pytest', 'pytest-cov'
+        ])
+        
+        # Run tests
+        test_dir = os.path.join(os.path.dirname(__file__), 'tests')
+        if os.path.exists(test_dir):
+            exit_code = subprocess.call([sys.executable, '-m', 'pytest', test_dir, '-v'])
+            if exit_code != 0:
+                print("⚠️  Some tests failed, but installation will continue")
+        else:
+            print("No tests directory found, skipping tests")
 
 class CustomBuildExt(build_ext):
-    """Custom build_ext command that provides user feedback and handles cross-platform builds"""
+    """Custom build_ext command that provides user feedback"""
     
     def build_extensions(self):
         print("\n" + "="*60)
         print("Building combinatorial_codes C extensions...")
-        print(f"Platform: {platform.system()} {platform.machine()}")
-        print(f"Python: {sys.version}")
         print("="*60)
-        
-        # Platform-specific compiler flags
-        for ext in self.extensions:
-            if platform.system() == 'Windows':
-                # MSVC flags
-                ext.extra_compile_args = ['/O2', '/favor:INTEL64']
-            elif platform.system() == 'Darwin':
-                # macOS clang flags
-                ext.extra_compile_args = ['-O3', '-ffast-math', '-march=native']
-                # Handle different architectures
-                if platform.machine() == 'arm64':
-                    ext.extra_compile_args.append('-mcpu=apple-m1')
-            else:
-                # Linux gcc flags
-                ext.extra_compile_args = ['-O3', '-ffast-math', '-march=native']
         
         try:
             super().build_extensions()
@@ -39,36 +54,22 @@ class CustomBuildExt(build_ext):
             print("  The package will still work using Python/Numba implementations.")
             print("  Performance will be slower but functionality remains intact.")
             print("\n  To enable C extensions, ensure you have:")
-            if platform.system() == 'Windows':
-                print("  - Microsoft Visual C++ Build Tools")
-            else:
-                print("  - A C compiler (gcc, clang)")
+            print("  - A C compiler (gcc, clang, or MSVC)")
             print("  - Python development headers")
             print("  - NumPy development headers")
             # Don't re-raise the exception - allow installation to continue
             
         print("="*60 + "\n")
 
-# Define the C extension with cross-platform handling
+# Define the C extension with error handling
 def get_ext_modules():
     try:
-        # Base configuration
-        include_dirs = [numpy.get_include()]
-        extra_compile_args = []
-        extra_link_args = []
-        
-        # Platform-specific initial setup (refined in CustomBuildExt)
-        if platform.system() == 'Windows':
-            extra_compile_args = ['/O2']
-        else:
-            extra_compile_args = ['-O3', '-ffast-math']
-        
         translated_functions_ext = Extension(
             'combinatorial_codes.translated_functions',
             sources=['src/combinatorial_codes/translated_functions.c'],
-            include_dirs=include_dirs,
-            extra_compile_args=extra_compile_args,
-            extra_link_args=extra_link_args,
+            include_dirs=[numpy.get_include()],
+            extra_compile_args=['-O3', '-ffast-math'],  # Optimization flags
+            extra_link_args=[],
         )
         return [translated_functions_ext]
     except Exception as e:
@@ -87,13 +88,16 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     ext_modules=get_ext_modules(),
-    cmdclass={'build_ext': CustomBuildExt},
+    cmdclass={
+        'build_ext': CustomBuildExt,
+        'test': TestCommand,  # Add custom test command
+    },
     python_requires=">=3.11",
     install_requires=[
-        "numba>=0.57.0",  # Adjust version as needed
-        "numpy",  # Adjust version as needed
-        "gudhi>=3.11.0",  # Adjust version as needed
-	"networkx>=3.0",
+        "numba>=0.57.0",
+        "numpy",
+        "gudhi>=3.11.0",
+        "networkx>=3.0",
     ],
     extras_require={
         "test": [
@@ -113,4 +117,3 @@ setup(
         "Operating System :: OS Independent",
     ],
 )
-

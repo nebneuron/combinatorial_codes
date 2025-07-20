@@ -5,16 +5,116 @@ This package provides tools for manipulating combinatorial codes. It includes me
 
 ## Installation
 
-To install the package, do the following: 
-* download the package
-* change to the appropriate directory, as in
-```
+### Quick Install (Package Only)
+To install just the package for use:
+```bash
 cd combinatorial_codes/
+pip install -e .
 ```
-* use the following command from commandline, to install the package into an active python environment:
+
+### Install with Testing Support
+To install the package and run tests:
+```bash
+cd combinatorial_codes/
+pip install -e ".[test]"  # Install with test dependencies
+python run_tests.py       # Run the test suite
+```
+
+### One-Command Install + Test
+For convenience, you can install and test in one step:
+```bash
+cd combinatorial_codes/
+python install_and_test.py
+```
+
+### Quick Start Demo
+To verify installation and see basic usage:
+```bash
+python getting_started.py
+```
+
+> **Note**: Tests do **not** run automatically during installation. They must be run separately using the commands above.
+
+## C Extension Compilation
+
+This package includes optional C extensions for performance-critical operations. The package will work without them, but with significantly slower performance.
+
+### System Requirements
+
+**Linux/macOS:**
+```bash
+# On Ubuntu/Debian:
+sudo apt-get install build-essential python3-dev
+
+# On CentOS/RHEL:
+sudo yum groupinstall "Development Tools"
+sudo yum install python3-devel
+
+# On macOS:
+xcode-select --install  # Install Xcode command line tools
+```
+
+**Windows:**
+- Install [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+- Or install [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/) with C++ development tools
+
+### Build Process
+
+The C extensions are automatically compiled during installation. You'll see status messages like:
 
 ```
- pip install -e .
+============================================================
+Building combinatorial_codes C extensions...
+Platform: Darwin arm64
+Python: 3.12.10
+============================================================
+
+✓ SUCCESS: C extensions compiled successfully!
+  Performance-optimized functions are now available.
+  Expected speedup: 5-10x for computationally intensive operations.
+============================================================
+```
+
+### Troubleshooting C Extensions
+
+If C extension compilation fails, the package will still work using Python/Numba implementations. To check your C extension status:
+
+```python
+from combinatorial_codes import check_c_extension_status
+check_c_extension_status()
+```
+
+**Common Issues:**
+
+1. **"No module named 'combinatorial_codes.translated_functions'"**
+   - C extension failed to compile
+   - Install build tools for your platform
+   - Ensure Python development headers are available
+
+2. **"Microsoft Visual C++ 14.0 is required" (Windows)**
+   - Install Visual C++ Build Tools
+   - Restart your terminal/IDE after installation
+
+3. **"clang: error: unsupported option" (macOS)**
+   - Update Xcode command line tools: `xcode-select --install`
+   - Check that you have a compatible Python version
+
+4. **Cross-Platform Compatibility**
+   - C extensions are compiled for specific Python versions and architectures
+   - When moving between different systems, reinstall the package:
+   ```bash
+   pip uninstall combinatorial_codes
+   pip install -e .
+   ```
+
+### Performance Impact
+
+- **With C extensions**: ~5-10x speedup for large codes
+- **Without C extensions**: Slower but fully functional using Numba JIT compilation
+
+To force rebuild C extensions:
+```bash
+pip install -e . --force-reinstall --no-deps
 ```
 
 ## Usage
@@ -78,6 +178,35 @@ print(is_maximal_intersection_complete)
 print(num_obstructions)
 ```
 
+
+## Testing
+
+This package includes a comprehensive test suite to verify functionality and ensure code quality.
+
+### Running Tests
+
+Run all tests:
+```bash
+python run_tests.py
+# or
+pytest tests/ -v
+```
+
+Run only the key example tests:
+```bash
+python run_tests.py --milo
+```
+
+### Test Coverage
+
+The test suite verifies:
+- Correct computation of simplicial violators
+- Proper obstruction detection and counting  
+- Consistency across different example codes
+- Performance optimizations (C extensions and Numba)
+- Random code generation functionality
+
+For detailed testing documentation, see [TESTING.md](TESTING.md).
 
 ## License
 

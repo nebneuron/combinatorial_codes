@@ -6,6 +6,10 @@ include setup.py
 # Include C source files
 recursive-include src/combinatorial_codes *.c *.h
 
+# Include test files for regression testing
+recursive-include tests *.py
+include pytest.ini
+
 # Include data files if any
 recursive-include src/combinatorial_codes *.txt *.dat *.json
 

@@ -120,9 +120,11 @@ class CombinatorialCode:
             # No words were passed
             self.words = np.zeros(0,dtype=np.uint8)
             self.dtype=np.uint8
-            self.sizes = []
+            self.sizes = np.array([])
+            self.unique_sizes = np.array([])
+            self.indices_by_size = Dict.empty(key_type=types.int64, value_type=types.Array(types.int64, 1, 'C'))
             self.max_size = 0
-            self.min_size = 0
+            self.min_size = float('inf')  # No words means no minimum size
             self.n_words = 0
             self.n_bits=0
             self.maximal_words= self.words
@@ -155,7 +157,7 @@ class CombinatorialCode:
             self.min_size, self.max_size = self.unique_sizes.min(), self.unique_sizes.max()
             self.maximal_words= find_maximal_words(words, self.unique_sizes, indices_by_size,self.dtype)
     def has_empty_set(self):
-        return bool(self.min_size==0)
+        return bool(self.n_words > 0 and self.min_size==0)
     def has_full_set(self):
         return bool(self.max_size==self.n_bits)
     def simplicial_violators(self, enforce_maximal_word_limit: bool=True):
@@ -173,6 +175,76 @@ class CombinatorialCode:
             return header+ maximal_words_line+nonmaximal_words_line  +"\n"
     def show(self):
         print(self.__repr__())
+
+    def add_empty_word(self):
+        """Add the empty word (empty set) to the combinatorial code.
+        
+        This method adds exactly one new word to the code: the empty set (word = 0).
+        If the code already contains the empty word, no changes are made.
+        If there were non-empty words in the code, the list of maximal words remains unchanged.
+        All other attributes (indices_by_size, unique_sizes, sizes, min_size, n_words, etc.) 
+        are updated correctly.
+        
+        Returns:
+            bool: True if the empty word was added, False if it was already present
+        """
+        # Check if empty word already exists
+        if self.has_empty_set():
+            return False
+        
+        # Handle empty code case
+        if self.n_words == 0:
+            # If code was empty, initialize with just the empty word
+            # Need to set a proper n_bits value - use default or 1
+            if not hasattr(self, 'n_bits') or self.n_bits == 0:
+                self.n_bits = 1  # Default minimum
+            
+            self.dtype = WORD_TYPE  # Use proper word type
+            self.words = np.array([0], dtype=self.dtype)
+            self.sizes = np.array([0])
+            self.unique_sizes = np.array([0])
+            self.indices_by_size = Dict.empty(key_type=types.int64, value_type=types.Array(types.int64, 1, 'C'))
+            self.indices_by_size[0] = np.array([0])
+            self.n_words = 1
+            self.min_size = 0
+            self.max_size = 0
+            self.maximal_words = np.array([0], dtype=self.dtype)
+            
+            # Initialize translation_dict for consistency
+            self.translation_dict = {i: i for i in range(self.n_bits)}
+            return True
+        
+        # Add empty word to existing code
+        empty_word = self.dtype(0)  # Empty word is represented as 0
+        
+        # Add to words array
+        self.words = np.concatenate([np.array([empty_word], dtype=self.dtype), self.words])
+        
+        # Add to sizes array  
+        self.sizes = np.concatenate([np.array([0]), self.sizes])
+        
+        # Update n_words
+        self.n_words += 1
+        
+        # Update unique_sizes to include 0 if not already present
+        if 0 not in self.unique_sizes:
+            self.unique_sizes = np.concatenate([np.array([0]), self.unique_sizes])
+            self.unique_sizes.sort()
+        
+        # Rebuild indices_by_size
+        indices_by_size = Dict.empty(key_type=types.int64, value_type=types.Array(types.int64, 1, 'C'))
+        for (i, u) in enumerate(self.unique_sizes):
+            indices_by_size[int(u)] = np.where(self.sizes == u)[0]
+        self.indices_by_size = indices_by_size
+        
+        # Update min_size (now 0 since we added empty word)
+        self.min_size = 0
+        # max_size remains unchanged
+        
+        # Maximal words remain unchanged when adding empty word (empty word is never maximal if non-empty words exist)
+        # No need to recalculate maximal_words since empty word cannot be maximal when other words exist
+        
+        return True
 
 
 

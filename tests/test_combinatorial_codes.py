@@ -8,6 +8,11 @@ including the CombinatorialCode class and its methods.
 import pytest
 import numpy as np
 from combinatorial_codes import CombinatorialCode, example_code
+from combinatorial_codes.utils import intersections_via_cliques
+from combinatorial_codes.correct_examples import (
+    RANDOM_EXAMPLE_32_INTERSECTIONS,
+    RANDOM_EXAMPLE_32_OBSTRUCTIONS
+)
 
 
 class TestExampleCodes:
@@ -246,6 +251,173 @@ class TestPackageIntegration:
         assert isinstance(num_obstructions, int)
         
         print(f"Tests running with C extensions: {has_c_extensions}")
+
+
+class TestAddEmptyWordMethod:
+    """Test suite for the add_empty_word method."""
+
+    def test_add_empty_word_to_empty_code(self):
+        """Test adding empty word to an empty code."""
+        C = CombinatorialCode([])
+        
+        # Initially should not have empty set
+        assert not C.has_empty_set()
+        assert C.n_words == 0
+        
+        # Add empty word
+        result = C.add_empty_word()
+        
+        # Should succeed and update correctly
+        assert result == True
+        assert C.has_empty_set()
+        assert C.n_words == 1
+        assert 0 in C.words
+        assert C.min_size == 0
+        assert C.max_size == 0
+
+    def test_add_empty_word_to_existing_code(self):
+        """Test adding empty word to a code with existing words."""
+        C = CombinatorialCode([[1], [2], [1, 2]])
+        
+        # Store initial state
+        initial_n_words = C.n_words
+        initial_maximal_words = C.maximal_words.copy()
+        
+        # Should not have empty set initially
+        assert not C.has_empty_set()
+        assert C.min_size > 0
+        
+        # Add empty word
+        result = C.add_empty_word()
+        
+        # Should succeed and update correctly
+        assert result == True
+        assert C.has_empty_set()
+        assert C.n_words == initial_n_words + 1
+        assert 0 in C.words
+        assert C.min_size == 0
+        
+        # Maximal words should remain unchanged
+        np.testing.assert_array_equal(C.maximal_words, initial_maximal_words)
+
+    def test_add_empty_word_when_already_present(self):
+        """Test that adding empty word when already present does nothing."""
+        C = CombinatorialCode([[], [1], [2]])
+        
+        # Should already have empty set
+        assert C.has_empty_set()
+        initial_n_words = C.n_words
+        
+        # Try to add empty word again
+        result = C.add_empty_word()
+        
+        # Should fail (return False) and not change anything
+        assert result == False
+        assert C.n_words == initial_n_words
+        assert C.has_empty_set()
+
+    def test_add_empty_word_updates_attributes_correctly(self):
+        """Test that all attributes are updated correctly when adding empty word."""
+        C = CombinatorialCode([[1], [2], [1, 2], [3]])
+        
+        # Add empty word
+        C.add_empty_word()
+        
+        # Check unique_sizes includes 0
+        assert 0 in C.unique_sizes
+        
+        # Check indices_by_size is correct
+        for size in C.unique_sizes:
+            indices = C.indices_by_size[size]
+            words_of_this_size = C.words[indices]
+            actual_sizes = [w.bit_count() for w in words_of_this_size]
+            assert all(s == size for s in actual_sizes), f"Size mismatch for size {size}"
+        
+        # Check that empty word is at size 0
+        size_0_indices = C.indices_by_size[0]
+        assert len(size_0_indices) == 1
+        assert C.words[size_0_indices[0]] == 0
+
+    def test_add_empty_word_preserves_functionality(self):
+        """Test that adding empty word preserves code functionality."""
+        C = CombinatorialCode([[1], [2], [1, 2]])
+        
+        # Add empty word
+        C.add_empty_word()
+        
+        # Should still be able to compute violators and obstructions
+        violators = C.simplicial_violators()
+        is_complete, num_obstructions = C.Obstructions()
+        
+        # Results should be valid
+        assert isinstance(violators, np.ndarray)
+        assert isinstance(is_complete, bool)
+        assert isinstance(num_obstructions, int)
+        assert num_obstructions >= 0
+
+
+class TestRegressionResults:
+    """Test suite for regression testing against known correct results."""
+
+    def test_random_example_32_intersections(self):
+        """Test that 'random example 32' produces the expected intersections."""
+        # Load the example code
+        C = example_code("random example 32")
+        
+        # Compute intersections
+        actual_intersections = intersections_via_cliques(C.maximal_words)
+        
+        # Compare with expected results
+        np.testing.assert_array_equal(
+            actual_intersections, 
+            RANDOM_EXAMPLE_32_INTERSECTIONS,
+            err_msg="Random example 32 intersections do not match expected values"
+        )
+        
+        # Additional consistency checks
+        assert len(actual_intersections) == len(RANDOM_EXAMPLE_32_INTERSECTIONS)
+        assert actual_intersections.dtype == RANDOM_EXAMPLE_32_INTERSECTIONS.dtype
+
+    def test_random_example_32_obstructions(self):
+        """Test that 'random example 32' produces the expected obstruction results."""
+        # Load the example code
+        C = example_code("random example 32")
+        
+        # Compute obstructions
+        actual_is_complete, actual_num_obstructions = C.Obstructions()
+        
+        # Compare with expected results
+        expected_is_complete, expected_num_obstructions = RANDOM_EXAMPLE_32_OBSTRUCTIONS
+        
+        assert actual_is_complete == expected_is_complete, \
+            f"Expected is_complete={expected_is_complete}, got {actual_is_complete}"
+        assert actual_num_obstructions == expected_num_obstructions, \
+            f"Expected {expected_num_obstructions} obstructions, got {actual_num_obstructions}"
+
+    def test_random_example_32_consistency(self):
+        """Test consistency between intersections and obstructions for random example 32."""
+        # Load the example code
+        C = example_code("random example 32")
+        
+        # Compute both results
+        intersections = intersections_via_cliques(C.maximal_words)
+        is_complete, num_obstructions = C.Obstructions()
+        
+        # Basic consistency checks
+        assert isinstance(intersections, np.ndarray), "Intersections should be a numpy array"
+        assert isinstance(is_complete, bool), "is_complete should be boolean"
+        assert isinstance(num_obstructions, int), "num_obstructions should be integer"
+        
+        # For this example, we know it should not be maximal intersection complete
+        assert not is_complete, "Random example 32 should not be maximal intersection complete"
+        
+        # Should have positive number of obstructions and intersections
+        assert num_obstructions > 0, "Should have some obstructions"
+        assert len(intersections) > 0, "Should have some intersections"
+        
+        # Verify intersections are properly sorted and unique
+        assert np.all(intersections[:-1] < intersections[1:]), "Intersections should be sorted"
+        assert len(intersections) == len(np.unique(intersections)), "Intersections should be unique"
 
 
 if __name__ == "__main__":

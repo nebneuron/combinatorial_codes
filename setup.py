@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
+from setuptools.command.install import install
 import numpy
 import sys
 import platform
+import subprocess
 
 class CustomBuildExt(build_ext):
     """Custom build_ext command that provides user feedback and handles cross-platform builds"""
@@ -49,6 +51,47 @@ class CustomBuildExt(build_ext):
             
         print("="*60 + "\n")
 
+class CustomInstall(install):
+    """Custom install command that runs post-installation verification"""
+    
+    def run(self):
+        # Run the normal installation
+        super().run()
+        
+        # Run post-installation verification
+        try:
+            # Import and run verification after installation
+            print("\n" + "="*60)
+            print("RUNNING POST-INSTALLATION VERIFICATION...")
+            print("="*60)
+            
+            # We need to use subprocess because the package might not be
+            # importable in the current process during installation
+            result = subprocess.run([
+                sys.executable, "-c",
+                """
+import sys
+import os
+# Try to import and run verification
+try:
+    from combinatorial_codes.install_verification import verify_installation
+    verify_installation()
+except ImportError:
+    print('⚠️  Could not run post-installation verification.')
+    print('   Package may still be functional. Try running manually:')
+    print('   python -c "from combinatorial_codes.install_verification import verify_installation; verify_installation()"')
+except Exception as e:
+    print(f'⚠️  Post-installation verification encountered an error: {e}')
+    print('   Package may still be functional.')
+                """
+            ], capture_output=False, text=True)
+            
+        except Exception as e:
+            print(f"\n⚠️  Could not run post-installation verification: {e}")
+            print("The package should still be functional.")
+            print("You can manually run verification with:")
+            print("python -c \"from combinatorial_codes.install_verification import verify_installation; verify_installation()\"")
+
 # Define the C extension with cross-platform handling
 def get_ext_modules():
     try:
@@ -87,7 +130,7 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     ext_modules=get_ext_modules(),
-    cmdclass={'build_ext': CustomBuildExt},
+    cmdclass={'build_ext': CustomBuildExt, 'install': CustomInstall},
     python_requires=">=3.11",
     install_requires=[
         "numba>=0.57.0",  # Adjust version as needed
@@ -106,6 +149,10 @@ setup(
             "black",
             "flake8",
         ],
+    },
+    include_package_data=True,
+    package_data={
+        "": ["tests/*.py", "pytest.ini"],
     },
     classifiers=[
         "Programming Language :: Python :: 3.11",

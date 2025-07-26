@@ -33,7 +33,21 @@ To verify installation and see basic usage:
 python getting_started.py
 ```
 
-> **Note**: Tests do **not** run automatically during installation. They must be run separately using the commands above.
+### Installation Verification
+The package includes automatic post-installation verification that runs regression tests during `pip install`. You can also manually verify your installation:
+
+```python
+from combinatorial_codes import verify_installation
+verify_installation()
+```
+
+This will run comprehensive tests including:
+- Package imports and C extension detection
+- Computational correctness using reference examples  
+- Performance benchmarking of key operations
+- Verification of the `add_empty_word()` functionality
+
+The verification typically takes 4-6 seconds and provides detailed feedback on your installation status.
 
 ## C Extension Compilation
 

@@ -28,6 +28,7 @@ from .examples import example_code
 from .examples import example_dictionary
 from .examples import bernoulli_random_code
 from .status import check_c_extension_status, quick_status
+from .install_verification import verify_installation
 # Import translated_functions (C extension) if available
 try:
     from . import translated_functions
@@ -47,7 +48,7 @@ __all__ = [
     "array_of_words_to_vectors_of_integers",
     "intersections_via_cliques",
     "intersections_inside_a_clique",
-    "check_c_extension_status", "quick_status",
+    "check_c_extension_status", "quick_status", "verify_installation",
     "translated_functions"
 ]
 

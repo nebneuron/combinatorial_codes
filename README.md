@@ -84,8 +84,6 @@ Run the test suite with:
 pytest tests/ -v
 ```
 
-See [TESTING.md](TESTING.md) for more detail.
-
 ## Citation
 
 ```bibtex

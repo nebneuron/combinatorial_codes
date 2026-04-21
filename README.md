@@ -1,244 +1,98 @@
 # Combinatorial Codes
 
-This package provides tools for manipulating combinatorial codes. It includes methods to identify obstructions to convexity in combinatorial codes.
+A Python package for studying combinatorial codes and identifying obstructions to convexity.
 
+Primary reference:
 
-## Installation
+> J. Cruz, C. Giusti, V. Itskov, B. Kronholm. **On Open and Closed Convex Codes.**
+> *Discrete and Computational Geometry* 61(2):247-270, 2019.
 
-### Quick Install (Package Only)
-To install just the package for use:
+## Install
+
 ```bash
-cd combinatorial_codes/
 pip install -e .
 ```
 
-### Install with Testing Support
-To install the package and run tests:
-```bash
-cd combinatorial_codes/
-pip install -e ".[test]"  # Install with test dependencies
-python run_tests.py       # Run the test suite
-```
+Optional C extensions are built automatically. If compilation fails, the package falls back to a Numba-based implementation and remains usable.
 
-### One-Command Install + Test
-For convenience, you can install and test in one step:
-```bash
-cd combinatorial_codes/
-python install_and_test.py
-```
+For a quick verification after install:
 
-### Quick Start Demo
-To verify installation and see basic usage:
 ```bash
 python getting_started.py
 ```
 
-### Installation Verification
-The package includes automatic post-installation verification that runs regression tests during `pip install`. You can also manually verify your installation:
-
-```python
-from combinatorial_codes import verify_installation
-verify_installation()
-```
-
-This will run comprehensive tests including:
-- Package imports and C extension detection
-- Computational correctness using reference examples  
-- Performance benchmarking of key operations
-- Verification of the `add_empty_word()` functionality
-
-The verification typically takes 4-6 seconds and provides detailed feedback on your installation status.
-
-## C Extension Compilation
-
-This package includes optional C extensions for performance-critical operations. The package will work without them, but with significantly slower performance.
-
-### System Requirements
-
-**Linux/macOS:**
-```bash
-# On Ubuntu/Debian:
-sudo apt-get install build-essential python3-dev
-
-# On CentOS/RHEL:
-sudo yum groupinstall "Development Tools"
-sudo yum install python3-devel
-
-# On macOS:
-xcode-select --install  # Install Xcode command line tools
-```
-
-**Windows:**
-- Install [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-- Or install [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/) with C++ development tools
-
-### Build Process
-
-The C extensions are automatically compiled during installation. You'll see status messages like:
-
-```
-============================================================
-Building combinatorial_codes C extensions...
-Platform: Darwin arm64
-Python: 3.12.10
-============================================================
-
-✓ SUCCESS: C extensions compiled successfully!
-  Performance-optimized functions are now available.
-  Expected speedup: 5-10x for computationally intensive operations.
-============================================================
-```
-
-### Troubleshooting C Extensions
-
-If C extension compilation fails, the package will still work using Python/Numba implementations. To check your C extension status:
-
-```python
-from combinatorial_codes import check_c_extension_status
-check_c_extension_status()
-```
-
-**Common Issues:**
-
-1. **"No module named 'combinatorial_codes.translated_functions'"**
-   - C extension failed to compile
-   - Install build tools for your platform
-   - Ensure Python development headers are available
-
-2. **"Microsoft Visual C++ 14.0 is required" (Windows)**
-   - Install Visual C++ Build Tools
-   - Restart your terminal/IDE after installation
-
-3. **"clang: error: unsupported option" (macOS)**
-   - Update Xcode command line tools: `xcode-select --install`
-   - Check that you have a compatible Python version
-
-4. **Cross-Platform Compatibility**
-   - C extensions are compiled for specific Python versions and architectures
-   - When moving between different systems, reinstall the package:
-   ```bash
-   pip uninstall combinatorial_codes
-   pip install -e .
-   ```
-
-### Performance Impact
-
-- **With C extensions**: ~5-10x speedup for large codes
-- **Without C extensions**: Slower but fully functional using Numba JIT compilation
-
-To force rebuild C extensions:
-```bash
-pip install -e . --force-reinstall --no-deps
-```
-
 ## Usage
 
-### Creating a Combinatorial Code
-
-You can create a combinatorial code by passing a list of lists of integers that represent the codewords:
+### Create a code
 
 ```python
-from combinatorial_codes import CombinatorialCode, example_code
+from combinatorial_codes import CombinatorialCode
 
-array_of_vectors = [[],[1],[2],[3],[1, 2], [2, 3], [1, 3]] # note that we include the empty set here. Currently we should always include empty set in a code. 
-code = CombinatorialCode(array_of_vectors)
-print(code)
-```
-### Computing the local obstruction information
-```
-is_maximal_intersection_complete, num_obstructions = code.Obstructions()
-print(is_maximal_intersection_complete, num_obstructions)
-```
-
-### There are some example codes that can be acced via the  example_code(code_name) as in the following: 
-```
-code1=example_code('eyes')            # a non-convex code on three neurons that resembles eyes
-code2=example_code('closed not open') # a "good" code that is not intersection complete
-code3=example_code('open not closed') # a "good" code that is not intersection complete
-```
-
-### Generate random Bernoulli code: 
-```
-code=bernoulli_random_code(n_bits=9, Nwords=100, p=0.25)
+code = CombinatorialCode([[], [1], [2], [3], [1, 2], [2, 3], [1, 3]])
 print(code)
 ```
 
-
-### Checking for Empty and Full Sets
-
-You can check if the code has an empty set or a full set:
+### Check basic properties
 
 ```python
-print(code.has_empty_set())  # True or False
-print(code.has_full_set())   # True or False
+print(code.has_empty_set())
+print(code.has_full_set())
 ```
 
-### Finding Simplicial Violators
+### Compute obstruction information
 
-You can find the simplicial violators of the code:
+```python
+is_intersection_complete, num_obstructions = code.Obstructions()
+print(is_intersection_complete, num_obstructions)
+```
+
+### Find simplicial violators
 
 ```python
 violators = code.simplicial_violators()
 print(violators)
 ```
 
-### Identifying Obstructions
-
-You can identify obstructions to the code being a good code:
+### Built-in example codes
 
 ```python
-is_maximal_intersection_complete, num_obstructions = code.Obstructions()
-print(is_maximal_intersection_complete)
-print(num_obstructions)
+from combinatorial_codes import example_code
+
+code1 = example_code("eyes")
+code2 = example_code("closed not open")
+code3 = example_code("open not closed")
 ```
 
+### Random Bernoulli code
+
+```python
+from combinatorial_codes import bernoulli_random_code
+
+code = bernoulli_random_code(n_bits=9, Nwords=100, p=0.25)
+print(code)
+```
 
 ## Testing
 
-This package includes a comprehensive test suite to verify functionality and ensure code quality.
+Run the test suite with:
 
-### Running Tests
-
-Run all tests:
 ```bash
-python run_tests.py
-# or
 pytest tests/ -v
 ```
 
-Run only the key example tests:
-```bash
-python run_tests.py --milo
-```
-
-### Test Coverage
-
-The test suite verifies:
-- Correct computation of simplicial violators
-- Proper obstruction detection and counting  
-- Consistency across different example codes
-- Performance optimizations (C extensions and Numba)
-- Random code generation functionality
-
-For detailed testing documentation, see [TESTING.md](TESTING.md).
-
-## License
-
-This project is licensed under the MIT License.
+See [TESTING.md](TESTING.md) for more detail.
 
 ## Citation
 
-If you use this work or its underlying theory in your research, please cite the following paper:
-
-For BibTeX users:
-```
+```bibtex
 @article{convexcodes2019,
-title = "On Open and Closed Convex Codes",
-author = "Joshua Cruz and Chad Giusti and Vladimir Itskov and Bill Kronholm",
-year = "2019",
-volume = "61",
-pages = "247--270",
-journal = "Discrete and Computational Geometry",
-publisher = "Springer New York",
-number = "2",}
+  title   = {On Open and Closed Convex Codes},
+  author  = {Joshua Cruz and Chad Giusti and Vladimir Itskov and Bill Kronholm},
+  journal = {Discrete and Computational Geometry},
+  year    = {2019},
+  volume  = {61},
+  number  = {2},
+  pages   = {247--270},
+  publisher = {Springer New York},
+}
 ```

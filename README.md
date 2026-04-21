@@ -9,6 +9,8 @@ Primary reference:
 
 ## Install
 
+This package has been tested only on Linux and macOS.
+
 ```bash
 pip install -e .
 ```

@@ -2,6 +2,8 @@
 
 This guide collects the installation, verification, and C extension build details that were previously embedded in the main README.
 
+This package has been tested only on Linux and macOS.
+
 ## Installation
 
 ### Quick Install
@@ -76,11 +78,6 @@ sudo yum install python3-devel
 xcode-select --install
 ```
 
-Windows:
-
-- Install [Microsoft Visual C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
-- Or install [Visual Studio Community](https://visualstudio.microsoft.com/vs/community/) with C++ development tools
-
 ### Build Process
 
 The C extensions are compiled automatically during installation.
@@ -102,11 +99,6 @@ check_c_extension_status()
 - The C extension did not compile.
 - Install the required build tools for your platform.
 - Make sure Python development headers are available.
-
-`Microsoft Visual C++ 14.0 is required`
-
-- Install Visual C++ Build Tools.
-- Restart your terminal or IDE after installation.
 
 `clang: error: unsupported option`
 

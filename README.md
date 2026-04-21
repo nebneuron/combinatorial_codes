@@ -15,6 +15,8 @@ pip install -e .
 
 Optional C extensions are built automatically. If compilation fails, the package falls back to a Numba-based implementation and remains usable.
 
+For installation verification, build requirements, and C extension troubleshooting, see [INSTALLATION_AND_COMPILATION.md](INSTALLATION_AND_COMPILATION.md).
+
 For a quick verification after install:
 
 ```bash

@@ -47,6 +47,13 @@ code2 = example_code('closed not open') # closed convex but not open convex
 code3 = example_code('open not closed') # open convex but not closed convex
 ```
 
+### Checking for empty and full sets
+
+```python
+print(code.has_empty_set())  # True or False
+print(code.has_full_set())   # True or False
+```
+
 ### Generating a random Bernoulli code
 
 ```python
